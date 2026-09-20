@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Desert Tracks Calculator 2026</title>
+<style>
+  :root{
+    --bg:#0d1017;
+    --panel:#171b25;
+    --panel2:#1f2430;
+    --gold:#e7b24b;
+    --gold2:#ffcf6a;
+    --text:#f7f2e8;
+    --muted:#aaa69d;
+    --purple:#bd77ff;
+    --green:#62d394;
+    --line:#343a49;
+    --danger:#ff7b7b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(circle at 20% 0%,rgba(231,178,75,.13),transparent 34%),
+      radial-gradient(circle at 100% 20%,rgba(189,119,255,.09),transparent 32%),
+      var(--bg);
+  }
+  .wrap{max-width:1040px;margin:auto;padding:28px 18px 54px}
+  .hero{padding:26px 0 20px}
+  .eyebrow{color:var(--gold2);font-weight:800;text-transform:uppercase;letter-spacing:.14em;font-size:.76rem}
+  h1{font-size:clamp(2rem,5vw,3.55rem);line-height:1;margin:.35rem 0 .8rem;letter-spacing:-.045em}
+  .lead{color:var(--muted);max-width:720px;line-height:1.6;margin:0}
+  .grid{display:grid;grid-template-columns:1.06fr .94fr;gap:18px;align-items:start}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,rgba(31,36,48,.98),rgba(23,27,37,.98));border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 18px 55px rgba(0,0,0,.23)}
+  .tabs{display:flex;gap:8px;background:#10131b;padding:5px;border-radius:14px;margin-bottom:18px}
+  .tab{flex:1;border:0;border-radius:10px;padding:11px 12px;background:transparent;color:var(--muted);font-weight:800;cursor:pointer}
+  .tab.active{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px #3b4252}
+  label{display:block;font-size:.82rem;color:var(--muted);font-weight:700;margin-bottom:7px}
+  .input-wrap{position:relative}
+  input[type=number]{width:100%;background:#10131b;border:1px solid var(--line);border-radius:14px;padding:15px 66px 15px 15px;color:var(--text);font-size:1.1rem;font-weight:800;outline:none}
+  input[type=number]:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(231,178,75,.12)}
+  .suffix{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.8rem;font-weight:800}
+  .field{margin-bottom:15px}
+  .switchrow{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:13px 14px;background:#10131b;border:1px solid var(--line);border-radius:14px;margin:14px 0}
+  .switchcopy b{display:block;font-size:.92rem}.switchcopy span{display:block;color:var(--muted);font-size:.76rem;margin-top:3px;line-height:1.35}
+  .switch{position:relative;width:48px;height:27px;flex:0 0 auto}.switch input{opacity:0;width:0;height:0}.slider{position:absolute;inset:0;background:#4a4f5e;border-radius:999px;cursor:pointer;transition:.2s}.slider:before{content:"";position:absolute;width:21px;height:21px;left:3px;top:3px;background:white;border-radius:50%;transition:.2s}.switch input:checked+.slider{background:var(--gold)}.switch input:checked+.slider:before{transform:translateX(21px)}
+  details{margin-top:14px;border-top:1px solid var(--line);padding-top:14px} summary{cursor:pointer;color:var(--gold2);font-weight:800}.advanced{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}@media(max-width:480px){.advanced{grid-template-columns:1fr}}
+  .results{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .metric{background:#10131b;border:1px solid var(--line);border-radius:16px;padding:16px;min-height:108px}
+  .metric.big{grid-column:1/-1;border-color:rgba(231,178,75,.55);background:linear-gradient(135deg,rgba(231,178,75,.12),#10131b 55%)}
+  .metric .k{color:var(--muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800}.metric .v{font-size:clamp(1.45rem,4vw,2.35rem);font-weight:900;margin-top:5px;letter-spacing:-.035em}.metric .s{font-size:.77rem;color:var(--muted);margin-top:5px;line-height:1.35}
+  .purple{color:var(--purple)}.gold{color:var(--gold2)}.green{color:var(--green)}
+  .progress{height:8px;background:#0c0f15;border-radius:999px;overflow:hidden;margin-top:13px}.bar{height:100%;background:linear-gradient(90deg,var(--purple),var(--gold));width:0%;transition:.35s}
+  .note{margin-top:14px;border-radius:14px;padding:12px 14px;color:#d6d0c4;background:rgba(231,178,75,.08);border:1px solid rgba(231,178,75,.22);font-size:.79rem;line-height:1.5}
+  h2{font-size:1.08rem;margin:0 0 14px}
+  .rules{margin-top:18px}.rulegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}@media(max-width:650px){.rulegrid{grid-template-columns:1fr 1fr}}
+  .rule{padding:12px;border:1px solid var(--line);border-radius:13px;background:#10131b}.rule b{display:block;color:var(--purple);font-size:1.1rem}.rule span{font-size:.73rem;color:var(--muted)}
+  .lamp-list{display:grid;gap:8px;margin-top:10px}.lamp{display:flex;justify-content:space-between;gap:12px;padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.06);font-size:.82rem}.lamp:last-child{border-bottom:0}.lamp span:last-child{color:var(--gold2);font-weight:800;white-space:nowrap}
+  .footer{color:#716f6a;text-align:center;font-size:.75rem;margin-top:24px}
+  .hidden{display:none!important}
+  .warn{color:var(--danger);font-size:.78rem;min-height:1.1em;margin-top:6px}
+  .target-rewards{margin-top:18px}
+  .reward-head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:14px}
+  .reward-head h2{margin:0}
+  .reward-step{color:var(--gold2);font-size:.82rem;font-weight:800}
+  .reward-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  @media(max-width:650px){.reward-grid{grid-template-columns:1fr}}
+  .reward-item{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#10131b;border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+  .reward-name{display:flex;gap:10px;align-items:center;min-width:0}
+  .reward-icon{font-size:1.15rem;flex:0 0 auto}
+  .reward-copy b{display:block;font-size:.87rem;line-height:1.25}
+  .reward-copy span{display:block;color:var(--muted);font-size:.72rem;margin-top:3px}
+  .reward-value{font-weight:900;font-size:1.1rem;white-space:nowrap}
+  .reward-value.purple{color:var(--purple)}
+  .reward-empty{color:var(--muted);font-size:.82rem;padding:4px 0}
+
+  .page-nav{display:flex;gap:8px;margin:0 0 18px;background:#10131b;padding:5px;border:1px solid var(--line);border-radius:14px;max-width:420px}
+  .page-btn{flex:1;border:0;border-radius:10px;padding:11px 12px;background:transparent;color:var(--muted);font-weight:900;cursor:pointer}
+  .page-btn.active{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px #3b4252}
+  .info-page{display:none}
+  .info-page.active{display:block}
+  .calc-page.hidden-page{display:none}
+  .bundle-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:#10131b}
+  .bundle-table{width:100%;border-collapse:collapse;min-width:900px;font-size:.82rem}
+  .bundle-table th,.bundle-table td{padding:12px 13px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  .bundle-table th:first-child,.bundle-table td:first-child{text-align:left;position:sticky;left:0;background:#10131b}
+  .bundle-table th{color:var(--gold2);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;background:#141821}
+  .bundle-table tr:last-child td{border-bottom:0}
+  .bundle-table .gold-row td{background:rgba(231,178,75,.055)}
+  .bundle-table .gold-row td:first-child{background:#181711}
+  .bundle-tier{font-weight:900;color:var(--text)}
+  .bundle-sub{display:block;color:var(--muted);font-size:.7rem;margin-top:2px}
+  .info-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  @media(max-width:760px){.info-summary{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.info-summary{grid-template-columns:1fr}}
+  .info-stat{padding:13px 14px;border:1px solid var(--line);border-radius:14px;background:#10131b}
+  .info-stat span{display:block;color:var(--muted);font-size:.72rem;font-weight:700}
+  .info-stat b{display:block;margin-top:3px;font-size:1.05rem}
+  .section-gap{margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Rise of Kingdoms</div>
+    <h1>Desert Tracks Calculator 2026</h1>
+    <p class="lead">Enter your Step Goal to calculate the expected Collector Tokens and Elegant Dice needed. You can also switch to Collector Token Goal mode. Magic Lamp probabilities are included as an optional expected-value calculation.</p>
+  </header>
+
+
+  <div class="page-nav" aria-label="Page navigation">
+    <button class="page-btn active" id="calculatorPageBtn">Calculator</button>
+    <button class="page-btn" id="informationPageBtn">Information</button>
+  </div>
+
+  <div class="calc-page" id="calculatorPage">
+  <main class="grid">
+    <section class="card">
+      <div class="tabs">
+        <button class="tab active" id="stepTab">Step Goal</button>
+        <button class="tab" id="tokenTab">Token Goal</button>
+      </div>
+
+      <div id="tokenMode" class="hidden">
+        <div class="field">
+          <label for="tokenGoal">Collector Token goal</label>
+          <div class="input-wrap"><input id="tokenGoal" type="number" min="0" step="1" value="0"><span class="suffix">TOKENS</span></div>
+        </div>
+      </div>
+
+      <div id="stepMode">
+        <div class="field">
+          <label for="stepGoal">Target step</label>
+          <div class="input-wrap"><input id="stepGoal" type="number" min="0" step="1" value="0"><span class="suffix">STEP</span></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="startStep">Starting step for Dice estimate</label>
+        <div class="input-wrap"><input id="startStep" type="number" min="0" step="1" value="0"><span class="suffix">STEP</span></div>
+        <div class="warn" id="startWarn"></div>
+      </div>
+
+      <div class="switchrow">
+        <div class="switchcopy"><b>Include average Magic Lamp token bonus</b><span>Uses the official probabilities shown in your screenshots.</span></div>
+        <label class="switch"><input id="lampToggle" type="checkbox" checked><span class="slider"></span></label>
+      </div>
+
+      <details>
+        <summary>Dice settings</summary>
+        <div class="advanced">
+          <div class="field">
+            <label for="avgSteps">Average steps per Elegant Die</label>
+            <div class="input-wrap"><input id="avgSteps" type="number" min="0.1" step="0.001" value="2.5"><span class="suffix">STEPS</span></div>
+          </div>
+          <div class="field">
+            <label for="diceBatch">Elegant Dice used at once</label>
+            <div class="input-wrap"><input id="diceBatch" type="number" min="1" step="1" value="8"><span class="suffix">DICE</span></div>
+          </div>
+        </div>
+        <div class="note">The default is <b>2.5 steps per Elegant Die</b>: rolls 1, 2, 3, and 4 each have a 25% probability, so the average is (1 + 2 + 3 + 4) ÷ 4 = 2.5. Dice are rounded up to a full batch of 8. Magic Lamp Dice effects can reduce the actual Dice required.</div>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>Result</h2>
+      <div class="results">
+        <div class="metric big"><div class="k" id="primaryLabel">Required Step</div><div class="v gold" id="requiredStep">620</div><div class="s" id="primarySub">Expected to reach your Collector Token goal.</div><div class="progress"><div class="bar" id="progressBar"></div></div></div>
+        <div class="metric"><div class="k">Elegant Dice</div><div class="v green" id="diceNeeded">240</div><div class="s" id="diceSub">30 rolls × 8 Dice</div></div>
+        <div class="metric"><div class="k">Expected Tokens</div><div class="v purple" id="expectedTokens">2,504.8</div><div class="s" id="tokenBreakdown">2,400 base + 104.8 Lamp bonus</div></div>
+        <div class="metric"><div class="k">Without Lamp Token Bonus</div><div class="v" id="noLampStep">637</div><div class="s" id="noLampSub">Step needed using base map rewards only.</div></div>
+        <div class="metric"><div class="k">Expected Lamp Bonus</div><div class="v" id="lampBonus">104.8</div><div class="s">Expected-value bonus; actual RNG can be higher or lower.</div></div>
+      </div>
+      <div class="note" id="resultNote">Magic Lamp results are random. The calculator shows the <b>expected average</b>, not a guaranteed outcome.</div>
+    </section>
+  </main>
+
+  <section class="card target-rewards">
+    <div class="reward-head">
+      <h2>Rewards up to Target</h2>
+      <div class="reward-step" id="rewardStepLabel">Step 0</div>
+    </div>
+    <div class="reward-grid">
+      <div class="reward-item">
+        <div class="reward-name"><div class="reward-icon">🟣</div><div class="reward-copy"><b>Collector Token</b><span id="collectorRewardSub">Fixed map rewards</span></div></div>
+        <div class="reward-value purple" id="collectorReward">0</div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-name"><div class="reward-icon">🪔</div><div class="reward-copy"><b>Magic Lamp</b><span>Special reward steps</span></div></div>
+        <div class="reward-value" id="lampReward">0</div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-name"><div class="reward-icon">🏰</div><div class="reward-copy"><b>Anniversary Commander Choice Reward</b><span>Special reward steps</span></div></div>
+        <div class="reward-value" id="commanderReward">0</div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-name"><div class="reward-icon">🧰</div><div class="reward-copy"><b>Equipment Material Choice Chest</b><span>Special reward steps</span></div></div>
+        <div class="reward-value" id="materialReward">0</div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-name"><div class="reward-icon">⭐</div><div class="reward-copy"><b>Dazzling Starlight Sculpture</b><span>×2 on each Sculpture reward step</span></div></div>
+        <div class="reward-value" id="starlightReward">0</div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-name"><div class="reward-icon">🌟</div><div class="reward-copy"><b>Bundle of Dazzling Starlight Sculptures</b><span>×1 on each Bundle reward step</span></div></div>
+        <div class="reward-value" id="starlightBundleReward">0</div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-name"><div class="reward-icon">🛡️</div><div class="reward-copy"><b>Level 5 Reserves</b><span>Special reward steps</span></div></div>
+        <div class="reward-value" id="reserveReward">0</div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-name"><div class="reward-icon">📘</div><div class="reward-copy"><b>Lvl 7 Tome of Knowledge</b><span>×4 on each Tome reward step</span></div></div>
+        <div class="reward-value" id="tomeReward">0</div>
+      </div>    </div>
+    <div class="note">This section automatically shows every fixed Desert Tracks reward earned up to the current target step. Collector Tokens also show the expected Magic Lamp token bonus when that option is enabled.</div>
+  </section>
+
+  </div>
+
+  <div class="info-page" id="informationPage">
+    <section class="card">
+      <h2>Elegant Dice Purchase</h2>
+      <div class="note" style="margin-top:0;margin-bottom:14px">Elegant Dice can also be purchased directly with Gems. The prices and stock below are taken from your in-game purchase screen.</div>
+      <div class="bundle-table-wrap">
+        <table class="bundle-table">
+          <thead>
+            <tr><th>Purchase Option</th><th>Price per Elegant Die</th><th>Stock</th><th>Total Gems</th></tr>
+          </thead>
+          <tbody>
+            <tr class="gold-row"><td><span class="bundle-tier">Discounted Elegant Dice</span><span class="bundle-sub">−80%</span></td><td>200 Gems</td><td>20</td><td><b>4,000</b></td></tr>
+            <tr><td><span class="bundle-tier">Regular Elegant Dice</span></td><td>1,000 Gems</td><td>500</td><td><b>500,000</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="info-summary" style="margin-top:14px">
+        <div class="info-stat"><span>Discount Stock</span><b>20 Dice</b></div>
+        <div class="info-stat"><span>Discount Cost</span><b>4,000 Gems</b></div>
+        <div class="info-stat"><span>Regular Stock</span><b>500 Dice</b></div>
+        <div class="info-stat"><span>Regular Cost</span><b>500,000 Gems</b></div>
+        <div class="info-stat"><span>Maximum Stock</span><b>520 Dice</b></div>
+        <div class="info-stat"><span>Full Stock Cost</span><b>504,000 Gems</b></div>
+      </div>
+      <div class="note">The first <b>20 Elegant Dice cost 200 Gems each</b>. The regular purchase option costs <b>1,000 Gems per Elegant Die</b> with a stock of <b>500</b>.</div>
+    </section>
+
+    <section class="card section-gap">
+      <h2>Master of Dunes Bundle</h2>
+      <div class="note" style="margin-top:0;margin-bottom:14px"><b>Golden Chest can be purchased 3 times.</b> The reward values below are taken from the bundle mails shown in your screenshots.</div>
+      <div class="bundle-table-wrap">
+        <table class="bundle-table">
+          <thead>
+            <tr><th>Bundle Tier</th><th>Gems</th><th>Alliance Chest</th><th>Elegant Dice</th><th>Speedups</th><th>Food</th><th>Wood</th><th>Stone</th><th>Gold</th><th>VIP Points</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="bundle-tier">Stone Chest</span><span class="bundle-sub">×1</span></td><td>1,050</td><td>Stone ×1</td><td>2</td><td>18h</td><td>550K</td><td>550K</td><td>412.5K</td><td>165K</td><td>1,025</td></tr>
+            <tr><td><span class="bundle-tier">Iron Chest</span><span class="bundle-sub">×1</span></td><td>2,200</td><td>Iron ×1</td><td>3</td><td>33h 45m</td><td>1.4M</td><td>1.4M</td><td>1.05M</td><td>420K</td><td>1,000</td></tr>
+            <tr><td><span class="bundle-tier">Bronze Chest</span><span class="bundle-sub">×1</span></td><td>4,600</td><td>Bronze ×1</td><td>5</td><td>65h</td><td>3.9M</td><td>3.9M</td><td>2.925M</td><td>1.3M</td><td>2,000</td></tr>
+            <tr><td><span class="bundle-tier">Silver Chest</span><span class="bundle-sub">×1</span></td><td>12,000</td><td>Silver ×1</td><td>9</td><td>162h</td><td>12M</td><td>12M</td><td>9M</td><td>4.8M</td><td>4,000</td></tr>
+            <tr class="gold-row"><td><span class="bundle-tier">Golden Chest</span><span class="bundle-sub">per purchase · up to ×3</span></td><td>25,000</td><td>Golden ×1</td><td>18</td><td>314h</td><td>26.5M</td><td>26.5M</td><td>19.875M</td><td>10.6M</td><td>6,000</td></tr>
+            <tr class="gold-row"><td><span class="bundle-tier">Golden Chest ×3</span><span class="bundle-sub">combined</span></td><td><b>75,000</b></td><td><b>Golden ×3</b></td><td><b>54</b></td><td><b>942h</b></td><td><b>79.5M</b></td><td><b>79.5M</b></td><td><b>59.625M</b></td><td><b>31.8M</b></td><td><b>18,000</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="section-gap">Full Bundle Chain Total</h2>
+      <div class="info-summary">
+        <div class="info-stat"><span>Gems</span><b>94,850</b></div>
+        <div class="info-stat"><span>Elegant Dice</span><b>73</b></div>
+        <div class="info-stat"><span>Speedups</span><b>1,220h 45m</b></div>
+        <div class="info-stat"><span>Food</span><b>97.35M</b></div>
+        <div class="info-stat"><span>Wood</span><b>97.35M</b></div>
+        <div class="info-stat"><span>Stone</span><b>73.0125M</b></div>
+        <div class="info-stat"><span>Gold</span><b>38.485M</b></div>
+        <div class="info-stat"><span>VIP Points</span><b>26,025</b></div>
+        <div class="info-stat"><span>Alliance Chests</span><b>7 total</b></div>
+      </div>
+      <div class="note">Full-chain total assumes <b>1× Stone + 1× Iron + 1× Bronze + 1× Silver + 3× Golden Chest</b>. Speedups are combined from all speedup items shown in the mails.</div>
+    </section>
+
+    <section class="card section-gap">
+      <h2>Moonlight Zephyrs Bundle</h2>
+      <div class="note" style="margin-top:0;margin-bottom:14px"><b>Golden Chest can be purchased 1 time.</b> The reward values below are taken from the bundle mails shown in your screenshots.</div>
+      <div class="bundle-table-wrap">
+        <table class="bundle-table">
+          <thead>
+            <tr><th>Bundle Tier</th><th>Gems</th><th>Alliance Chest</th><th>Elegant Dice</th><th>Speedups</th><th>Food</th><th>Wood</th><th>Stone</th><th>Gold</th><th>VIP Points</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="bundle-tier">Stone Chest</span><span class="bundle-sub">×1</span></td><td>1,050</td><td>Stone ×1</td><td>1</td><td>15h 10m</td><td>550K</td><td>550K</td><td>412.5K</td><td>165K</td><td>1,025</td></tr>
+            <tr><td><span class="bundle-tier">Iron Chest</span><span class="bundle-sub">×1</span></td><td>2,200</td><td>Iron ×1</td><td>2</td><td>31h 40m</td><td>1.4M</td><td>1.4M</td><td>1.05M</td><td>420K</td><td>1,000</td></tr>
+            <tr><td><span class="bundle-tier">Bronze Chest</span><span class="bundle-sub">×1</span></td><td>4,600</td><td>Bronze ×1</td><td>3</td><td>57h 30m</td><td>3.9M</td><td>3.9M</td><td>2.925M</td><td>1.3M</td><td>2,000</td></tr>
+            <tr><td><span class="bundle-tier">Silver Chest</span><span class="bundle-sub">×1</span></td><td>12,000</td><td>Silver ×1</td><td>6</td><td>156h 30m</td><td>12M</td><td>12M</td><td>9M</td><td>4.8M</td><td>4,000</td></tr>
+            <tr class="gold-row"><td><span class="bundle-tier">Golden Chest</span><span class="bundle-sub">×1 only</span></td><td>25,000</td><td>Golden ×1</td><td>11</td><td>285h</td><td>26.5M</td><td>26.5M</td><td>19.875M</td><td>10.6M</td><td>6,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="section-gap">Full Bundle Chain Total</h2>
+      <div class="info-summary">
+        <div class="info-stat"><span>Gems</span><b>44,850</b></div>
+        <div class="info-stat"><span>Elegant Dice</span><b>23</b></div>
+        <div class="info-stat"><span>Speedups</span><b>545h 50m</b></div>
+        <div class="info-stat"><span>Food</span><b>44.35M</b></div>
+        <div class="info-stat"><span>Wood</span><b>44.35M</b></div>
+        <div class="info-stat"><span>Stone</span><b>33.2625M</b></div>
+        <div class="info-stat"><span>Gold</span><b>17.285M</b></div>
+        <div class="info-stat"><span>VIP Points</span><b>14,025</b></div>
+        <div class="info-stat"><span>Alliance Chests</span><b>5 total</b></div>
+      </div>
+      <div class="note">Full-chain total assumes <b>1× Stone + 1× Iron + 1× Bronze + 1× Silver + 1× Golden Chest</b>. Speedups are combined from all speedup items shown in the mails.</div>
+    </section>
+
+  <section class="card rules">
+    <h2>Collector Token map values</h2>
+    <div class="rulegrid">
+      <div class="rule"><b>×2</b><span>Normal steps 1–19</span></div>
+      <div class="rule"><b>×3</b><span>Normal steps 21–259</span></div>
+      <div class="rule"><b>×4</b><span>Normal steps 261–374</span></div>
+      <div class="rule"><b>×6</b><span>Normal steps 376–450; every step from 451 onward</span></div>
+    </div>
+    <div class="note">Special reward steps up to 450 do not give the normal Collector Token reward. From <b>Step 451 onward, every step gives 6 Collector Tokens</b>.</div>
+  </section>
+
+  <section class="card rules">
+    <h2>Magic Lamp probabilities used</h2>
+    <div class="lamp-list">
+      <div class="lamp"><span>Gain 1 Elegant Dice</span><span>7.894%</span></div>
+      <div class="lamp"><span>Gain 2 Elegant Dice</span><span>4.276%</span></div>
+      <div class="lamp"><span>Next 1 Elegant Dice rolls 4</span><span>8.552%</span></div>
+      <div class="lamp"><span>Next 2 Elegant Dice roll 4</span><span>5.592%</span></div>
+      <div class="lamp"><span>Next 3 Elegant Dice roll 4</span><span>3.947%</span></div>
+      <div class="lamp"><span>+20% Collector Tokens for next 15 spaces</span><span>24.671%</span></div>
+      <div class="lamp"><span>+30% Collector Tokens for next 20 spaces</span><span>20.394%</span></div>
+      <div class="lamp"><span>+40% Collector Tokens for next 25 spaces</span><span>14.802%</span></div>
+      <div class="lamp"><span>+50% Collector Tokens for next 30 spaces</span><span>9.868%</span></div>
+    </div>
+  </section>
+
+  </div>
+
+  <div class="footer">Desert Tracks calculator · Expected values are estimates and can differ from actual RNG results.</div>
+</div>
+
+<script>
+(() => {
+  // There are two different Starlight reward items on the Desert Tracks map.
+  const starlightQty = new Map([
+    [5,2],[15,2],[25,2],[35,2],[55,2],[65,2],[80,2],[85,2],[95,2],[105,2],
+    [115,2],[145,2],[155,2],[175,2],[195,2],[215,2],[255,2],[325,2],[425,2],[435,2]
+  ]);
+  const starlightBundles = [70,110,150,190,230,270,275,310,315,350];
+  const starlight = [...starlightQty.keys()];
+  const tomes = [10,30,50,90,165,250,290,330,355,370,385,440,445,450];
+  const commanders = [20,75,100,120,140,160,180,200,220,240,260,280,320,360];
+  const materials = [40,130,170,210,265,300,340,365,395,415];
+  const lamps = [60,125,225,295,380,400];
+  const reserves = [185,235,285,335,375,405];
+  const specials = new Set([...starlight,...starlightBundles,...tomes,...commanders,...materials,...lamps,...reserves]);
+
+  const tokenEffects = [
+    {pct:.20, spaces:15, probability:.24671},
+    {pct:.30, spaces:20, probability:.20394},
+    {pct:.40, spaces:25, probability:.14802},
+    {pct:.50, spaces:30, probability:.09868}
+  ];
+
+  function baseToken(step){
+    if(step < 1) return 0;
+    if(step <= 450 && specials.has(step)) return 0;
+    if(step <= 19) return 2;
+    if(step >= 21 && step <= 259) return 3;
+    if(step >= 261 && step <= 374) return 4;
+    if(step >= 376) return 6;
+    return 0;
+  }
+
+  function baseTokensTo(step){
+    step = Math.max(0, Math.floor(step));
+    let total = 0;
+    const capped = Math.min(step,450);
+    for(let s=1;s<=capped;s++) total += baseToken(s);
+    if(step > 450) total += (step-450)*6;
+    return total;
+  }
+
+  function expectedLampBonusTo(step){
+    step = Math.max(0, Math.floor(step));
+    let total = 0;
+    for(const lamp of lamps){
+      if(lamp > step) continue;
+      for(const e of tokenEffects){
+        let eligible = 0;
+        const end = Math.min(step, lamp + e.spaces);
+        for(let s=lamp+1;s<=end;s++) eligible += baseToken(s);
+        total += e.probability * e.pct * eligible;
+      }
+    }
+    return total;
+  }
+
+  function tokensTo(step, includeLamp){
+    return baseTokensTo(step) + (includeLamp ? expectedLampBonusTo(step) : 0);
+  }
+
+  function countAtOrBefore(list, step){
+    return list.reduce((n,s)=>n+(s<=step?1:0),0);
+  }
+
+  function sumMapAtOrBefore(map, step){
+    let total=0;
+    for(const [s,qty] of map) if(s<=step) total+=qty;
+    return total;
+  }
+
+  function rewardsTo(step, includeLamp){
+    step=Math.max(0,Math.floor(Number(step)||0));
+    const base=baseTokensTo(step);
+    const lampBonus=includeLamp ? expectedLampBonusTo(step) : 0;
+    return {
+      baseTokens:base,
+      lampBonus,
+      expectedTokens:base+lampBonus,
+      starlight:sumMapAtOrBefore(starlightQty,step),
+      starlightBundles:countAtOrBefore(starlightBundles,step),
+      tomes:countAtOrBefore(tomes,step)*4,
+      commanders:countAtOrBefore(commanders,step),
+      materials:countAtOrBefore(materials,step),
+      lamps:countAtOrBefore(lamps,step),
+      reserves:countAtOrBefore(reserves,step)
+    };
+  }
+
+  function stepForTokens(target, includeLamp){
+    target = Math.max(0, Number(target)||0);
+    if(target <= 0) return 0;
+    let lo=0, hi=512;
+    while(tokensTo(hi,includeLamp) < target && hi < 1000000) hi *= 2;
+    while(lo < hi){
+      const mid = Math.floor((lo+hi)/2);
+      if(tokensTo(mid,includeLamp) >= target) hi=mid; else lo=mid+1;
+    }
+    return lo;
+  }
+
+  const fmt = (n,d=0) => Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const $ = id => document.getElementById(id);
+  let mode='step';
+
+  function calcDice(targetStep){
+    const start = Math.max(0, Math.floor(Number($('startStep').value)||0));
+    const avg = Math.max(.1, Number($('avgSteps').value)||2.5);
+    const batch = Math.max(1, Math.floor(Number($('diceBatch').value)||8));
+    if(start > targetStep){
+      $('startWarn').textContent = 'Starting step is already above the target step.';
+      return {dice:0, rolls:0, batch, start};
+    }
+    $('startWarn').textContent = '';
+    const raw = (targetStep-start)/avg;
+    const rolls = Math.ceil(raw/batch);
+    return {dice:rolls*batch, rolls, batch, start};
+  }
+
+  function update(){
+    const includeLamp = $('lampToggle').checked;
+    let targetStep, goalTokens;
+
+    if(mode==='token'){
+      goalTokens = Math.max(0,Number($('tokenGoal').value)||0);
+      targetStep = stepForTokens(goalTokens,includeLamp);
+      $('primaryLabel').textContent='Required Step';
+      $('requiredStep').textContent=fmt(targetStep);
+      $('primarySub').textContent='Expected step to reach '+fmt(goalTokens)+' Collector Tokens.';
+      const noLamp = stepForTokens(goalTokens,false);
+      $('noLampStep').textContent=fmt(noLamp);
+      $('noLampSub').textContent='Step needed using base map rewards only.';
+    } else {
+      targetStep = Math.max(0,Math.floor(Number($('stepGoal').value)||0));
+      goalTokens = tokensTo(targetStep,includeLamp);
+      $('primaryLabel').textContent='Target Step';
+      $('requiredStep').textContent=fmt(targetStep);
+      $('primarySub').textContent='Expected Collector Tokens at this step.';
+      const baseOnly = baseTokensTo(targetStep);
+      $('noLampStep').textContent=fmt(baseOnly,0);
+      $('noLampSub').textContent='Collector Tokens at this step without Lamp token bonuses.';
+    }
+
+    const base = baseTokensTo(targetStep);
+    const lamp = includeLamp ? expectedLampBonusTo(targetStep) : 0;
+    const expected = base+lamp;
+    const dice=calcDice(targetStep);
+
+    $('diceNeeded').textContent=fmt(dice.dice);
+    $('diceSub').textContent=`${fmt(dice.rolls)} rolls × ${dice.batch} Dice${dice.start ? ` from Step ${fmt(dice.start)}` : ''}`;
+    $('expectedTokens').textContent=fmt(expected,1);
+    $('tokenBreakdown').textContent=`${fmt(base)} base${includeLamp ? ` + ${fmt(lamp,1)} expected Lamp bonus` : ' · Lamp bonus disabled'}`;
+    $('lampBonus').textContent=includeLamp ? fmt(lamp,1) : 'Off';
+
+    const rewards = rewardsTo(targetStep,includeLamp);
+    $('rewardStepLabel').textContent='Step '+fmt(targetStep);
+    $('collectorReward').textContent=includeLamp ? fmt(rewards.expectedTokens,1) : fmt(rewards.baseTokens);
+    $('collectorRewardSub').textContent=includeLamp
+      ? `${fmt(rewards.baseTokens)} fixed + ${fmt(rewards.lampBonus,1)} expected Lamp bonus`
+      : `${fmt(rewards.baseTokens)} fixed map rewards`;
+    $('starlightReward').textContent=fmt(rewards.starlight);
+    $('starlightBundleReward').textContent=fmt(rewards.starlightBundles);
+    $('tomeReward').textContent=fmt(rewards.tomes);
+    $('commanderReward').textContent=fmt(rewards.commanders);
+    $('materialReward').textContent=fmt(rewards.materials);
+    $('lampReward').textContent=fmt(rewards.lamps);
+    $('reserveReward').textContent=fmt(rewards.reserves);
+
+    const progressTarget = mode==='token' ? Number($('tokenGoal').value)||1 : Math.max(expected,1);
+    const pct = Math.min(100,expected/progressTarget*100);
+    $('progressBar').style.width=pct+'%';
+
+    $('resultNote').innerHTML = includeLamp
+      ? 'Magic Lamp results are random. The calculator shows the <b>expected average</b>, not a guaranteed outcome.'
+      : 'Magic Lamp Collector Token bonuses are <b>disabled</b>. The result uses only fixed map rewards.';
+  }
+
+  function setMode(next){
+    mode=next;
+    $('tokenTab').classList.toggle('active',mode==='token');
+    $('stepTab').classList.toggle('active',mode==='step');
+    $('tokenMode').classList.toggle('hidden',mode!=='token');
+    $('stepMode').classList.toggle('hidden',mode!=='step');
+    update();
+  }
+
+  $('tokenTab').addEventListener('click',()=>setMode('token'));
+  $('stepTab').addEventListener('click',()=>setMode('step'));
+  ['tokenGoal','stepGoal','startStep','avgSteps','diceBatch','lampToggle'].forEach(id=>$(id).addEventListener('input',update));
+  $('lampToggle').addEventListener('change',update);
+
+  function setPage(page){
+    const info = page === 'information';
+    $('calculatorPage').classList.toggle('hidden-page', info);
+    $('informationPage').classList.toggle('active', info);
+    $('calculatorPageBtn').classList.toggle('active', !info);
+    $('informationPageBtn').classList.toggle('active', info);
+  }
+  $('calculatorPageBtn').addEventListener('click',()=>setPage('calculator'));
+  $('informationPageBtn').addEventListener('click',()=>setPage('information'));
+
+  update();
+})();
+</script>
+</body>
+</html>
