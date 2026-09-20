@@ -131,7 +131,7 @@
 
       <div id="tokenMode" class="hidden">
         <div class="field">
-          <label for="tokenGoal">Collector Token goal</label>
+          <label for="tokenGoal">Additional Collector Token goal</label>
           <div class="input-wrap"><input id="tokenGoal" type="number" min="0" step="1" value="0"><span class="suffix">TOKENS</span></div>
         </div>
       </div>
@@ -144,7 +144,7 @@
       </div>
 
       <div class="field">
-        <label for="startStep">Starting step for Dice estimate</label>
+        <label for="startStep">Starting step</label>
         <div class="input-wrap"><input id="startStep" type="number" min="0" step="1" value="0"><span class="suffix">STEP</span></div>
         <div class="warn" id="startWarn"></div>
       </div>
@@ -455,6 +455,24 @@
     return lo;
   }
 
+  function stepForAdditionalTokens(startStep, additionalTokens, includeLamp){
+    const start = Math.max(0, Math.floor(Number(startStep)||0));
+    const additional = Math.max(0, Number(additionalTokens)||0);
+    if(additional <= 0) return start;
+
+    const targetTotal = tokensTo(start, includeLamp) + additional;
+    let lo = start;
+    let hi = Math.max(start + 1, 512);
+    while(tokensTo(hi, includeLamp) < targetTotal && hi < 1000000) hi *= 2;
+
+    while(lo < hi){
+      const mid = Math.floor((lo + hi) / 2);
+      if(tokensTo(mid, includeLamp) >= targetTotal) hi = mid;
+      else lo = mid + 1;
+    }
+    return lo;
+  }
+
   const fmt = (n,d=0) => Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
   const $ = id => document.getElementById(id);
   let mode='step';
@@ -479,13 +497,14 @@
 
     if(mode==='token'){
       goalTokens = Math.max(0,Number($('tokenGoal').value)||0);
-      targetStep = stepForTokens(goalTokens,includeLamp);
+      const start = Math.max(0,Math.floor(Number($('startStep').value)||0));
+      targetStep = stepForAdditionalTokens(start,goalTokens,includeLamp);
       $('primaryLabel').textContent='Required Step';
       $('requiredStep').textContent=fmt(targetStep);
-      $('primarySub').textContent='Expected step to reach '+fmt(goalTokens)+' Collector Tokens.';
-      const noLamp = stepForTokens(goalTokens,false);
+      $('primarySub').textContent='Expected step to earn '+fmt(goalTokens)+' additional Collector Tokens from Step '+fmt(start)+'.';
+      const noLamp = stepForAdditionalTokens(start,goalTokens,false);
       $('noLampStep').textContent=fmt(noLamp);
-      $('noLampSub').textContent='Step needed using base map rewards only.';
+      $('noLampSub').textContent='Required step for the additional Tokens using base map rewards only.';
     } else {
       targetStep = Math.max(0,Math.floor(Number($('stepGoal').value)||0));
       goalTokens = tokensTo(targetStep,includeLamp);
@@ -497,15 +516,24 @@
       $('noLampSub').textContent='Collector Tokens at this step without Lamp token bonuses.';
     }
 
-    const base = baseTokensTo(targetStep);
-    const lamp = includeLamp ? expectedLampBonusTo(targetStep) : 0;
-    const expected = base+lamp;
+    const start = Math.max(0,Math.floor(Number($('startStep').value)||0));
+    const totalBase = baseTokensTo(targetStep);
+    const totalLamp = includeLamp ? expectedLampBonusTo(targetStep) : 0;
+    const totalExpected = totalBase + totalLamp;
+
+    const base = mode==='token' ? totalBase - baseTokensTo(start) : totalBase;
+    const lamp = mode==='token' && includeLamp
+      ? totalLamp - expectedLampBonusTo(start)
+      : totalLamp;
+    const expected = base + lamp;
     const dice=calcDice(targetStep);
 
     $('diceNeeded').textContent=fmt(dice.dice);
     $('diceSub').textContent=`${fmt(dice.rolls)} rolls × ${dice.batch} Dice${dice.start ? ` from Step ${fmt(dice.start)}` : ''}`;
     $('expectedTokens').textContent=fmt(expected,1);
-    $('tokenBreakdown').textContent=`${fmt(base)} base${includeLamp ? ` + ${fmt(lamp,1)} expected Lamp bonus` : ' · Lamp bonus disabled'}`;
+    $('tokenBreakdown').textContent=mode==='token'
+      ? `${fmt(base)} additional base${includeLamp ? ` + ${fmt(lamp,1)} expected Lamp bonus` : ' · Lamp bonus disabled'}`
+      : `${fmt(base)} base${includeLamp ? ` + ${fmt(lamp,1)} expected Lamp bonus` : ' · Lamp bonus disabled'}`;
     $('lampBonus').textContent=includeLamp ? fmt(lamp,1) : 'Off';
 
     const rewards = rewardsTo(targetStep,includeLamp);
