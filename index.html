@@ -102,6 +102,9 @@
   .info-stat span{display:block;color:var(--muted);font-size:.72rem;font-weight:700}
   .info-stat b{display:block;margin-top:3px;font-size:1.05rem}
   .section-gap{margin-top:18px}
+  .reset-row{display:flex;justify-content:flex-end;margin-top:16px}
+  .reset-btn{border:1px solid var(--line);background:#10131b;color:var(--text);border-radius:12px;padding:10px 16px;font-weight:900;cursor:pointer;transition:.18s}
+  .reset-btn:hover{border-color:var(--gold);color:var(--gold2);background:rgba(231,178,75,.08)}
 </style>
 </head>
 <body>
@@ -165,6 +168,10 @@
         </div>
         <div class="note">The default is <b>2.5 steps per Elegant Die</b>: rolls 1, 2, 3, and 4 each have a 25% probability, so the average is (1 + 2 + 3 + 4) ÷ 4 = 2.5. Dice are rounded up to a full batch of 8. Magic Lamp Dice effects can reduce the actual Dice required.</div>
       </details>
+
+      <div class="reset-row">
+        <button class="reset-btn" id="resetBtn" type="button">↻ Reset Calculator</button>
+      </div>
     </section>
 
     <section class="card">
@@ -537,6 +544,20 @@
   $('stepTab').addEventListener('click',()=>setMode('step'));
   ['tokenGoal','stepGoal','startStep','avgSteps','diceBatch','lampToggle'].forEach(id=>$(id).addEventListener('input',update));
   $('lampToggle').addEventListener('change',update);
+
+  function resetCalculator(){
+    $('stepGoal').value='0';
+    $('tokenGoal').value='0';
+    $('startStep').value='0';
+    $('avgSteps').value='2.5';
+    $('diceBatch').value='8';
+    $('lampToggle').checked=true;
+    const settings=document.querySelector('details');
+    if(settings) settings.open=false;
+    setMode('step');
+    setPage('calculator');
+  }
+  $('resetBtn').addEventListener('click',resetCalculator);
 
   function setPage(page){
     const info = page === 'information';
