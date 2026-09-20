@@ -112,7 +112,7 @@
   <header class="hero">
     <div class="eyebrow">Rise of Kingdoms</div>
     <h1>Desert Tracks Calculator 2026</h1>
-    <p class="lead">Enter your Step Goal to calculate the expected Collector Tokens and Elegant Dice needed. You can also switch to Collector Token Goal mode. Magic Lamp probabilities are included as an optional expected-value calculation.</p>
+    <p class="lead">Enter a Step Goal, an additional Collector Token Goal, or an Elegant Dice amount. The calculator can estimate Dice needed for Steps and Steps reached from Dice. Magic Lamp token probabilities are included as an optional expected-value calculation.</p>
   </header>
 
 
@@ -127,6 +127,7 @@
       <div class="tabs">
         <button class="tab active" id="stepTab">Step Goal</button>
         <button class="tab" id="tokenTab">Token Goal</button>
+        <button class="tab" id="diceTab">Dice → Steps</button>
       </div>
 
       <div id="tokenMode" class="hidden">
@@ -140,6 +141,13 @@
         <div class="field">
           <label for="stepGoal">Target step</label>
           <div class="input-wrap"><input id="stepGoal" type="number" min="0" step="1" value="0"><span class="suffix">STEP</span></div>
+        </div>
+      </div>
+
+      <div id="diceMode" class="hidden">
+        <div class="field">
+          <label for="diceGoal">Elegant Dice amount</label>
+          <div class="input-wrap"><input id="diceGoal" type="number" min="0" step="1" value="0"><span class="suffix">DICE</span></div>
         </div>
       </div>
 
@@ -180,7 +188,7 @@
         <div class="metric big"><div class="k" id="primaryLabel">Required Step</div><div class="v gold" id="requiredStep">620</div><div class="s" id="primarySub">Expected to reach your Collector Token goal.</div><div class="progress"><div class="bar" id="progressBar"></div></div></div>
         <div class="metric"><div class="k">Elegant Dice</div><div class="v green" id="diceNeeded">240</div><div class="s" id="diceSub">30 rolls × 8 Dice</div></div>
         <div class="metric"><div class="k">Expected Tokens</div><div class="v purple" id="expectedTokens">2,504.8</div><div class="s" id="tokenBreakdown">2,400 base + 104.8 Lamp bonus</div></div>
-        <div class="metric"><div class="k">Without Lamp Token Bonus</div><div class="v" id="noLampStep">637</div><div class="s" id="noLampSub">Step needed using base map rewards only.</div></div>
+        <div class="metric"><div class="k" id="noLampLabel">Without Lamp Token Bonus</div><div class="v" id="noLampStep">637</div><div class="s" id="noLampSub">Step needed using base map rewards only.</div></div>
         <div class="metric"><div class="k">Expected Lamp Bonus</div><div class="v" id="lampBonus">104.8</div><div class="s">Expected-value bonus; actual RNG can be higher or lower.</div></div>
       </div>
       <div class="note" id="resultNote">Magic Lamp results are random. The calculator shows the <b>expected average</b>, not a guaranteed outcome.</div>
@@ -493,51 +501,75 @@
 
   function update(){
     const includeLamp = $('lampToggle').checked;
-    let targetStep, goalTokens;
+    const start = Math.max(0,Math.floor(Number($('startStep').value)||0));
+    const avg = Math.max(.1, Number($('avgSteps').value)||2.5);
+    let targetStep, rewardStep, goalTokens, enteredDice = 0;
+
+    $('startWarn').textContent='';
 
     if(mode==='token'){
       goalTokens = Math.max(0,Number($('tokenGoal').value)||0);
-      const start = Math.max(0,Math.floor(Number($('startStep').value)||0));
       targetStep = stepForAdditionalTokens(start,goalTokens,includeLamp);
+      rewardStep = Math.floor(targetStep);
       $('primaryLabel').textContent='Required Step';
       $('requiredStep').textContent=fmt(targetStep);
       $('primarySub').textContent='Expected step to earn '+fmt(goalTokens)+' additional Collector Tokens from Step '+fmt(start)+'.';
       const noLamp = stepForAdditionalTokens(start,goalTokens,false);
+      $('noLampLabel').textContent='Required Step Without Lamp Bonus';
       $('noLampStep').textContent=fmt(noLamp);
       $('noLampSub').textContent='Required step for the additional Tokens using base map rewards only.';
+    } else if(mode==='dice'){
+      enteredDice = Math.max(0,Math.floor(Number($('diceGoal').value)||0));
+      const expectedTravel = enteredDice * avg;
+      targetStep = start + expectedTravel;
+      rewardStep = Math.floor(targetStep);
+      goalTokens = tokensTo(rewardStep,includeLamp) - tokensTo(start,includeLamp);
+      $('primaryLabel').textContent='Expected Final Step';
+      $('requiredStep').textContent=fmt(targetStep, expectedTravel % 1 ? 1 : 0);
+      $('primarySub').textContent=fmt(enteredDice)+' Elegant Dice × '+fmt(avg,avg%1?1:0)+' average steps from Step '+fmt(start)+'.';
+      $('noLampLabel').textContent='Expected Steps Traveled';
+      $('noLampStep').textContent=fmt(expectedTravel, expectedTravel % 1 ? 1 : 0);
+      $('noLampSub').textContent='Based on the selected average steps per Elegant Die.';
     } else {
       targetStep = Math.max(0,Math.floor(Number($('stepGoal').value)||0));
+      rewardStep = targetStep;
       goalTokens = tokensTo(targetStep,includeLamp);
       $('primaryLabel').textContent='Target Step';
       $('requiredStep').textContent=fmt(targetStep);
       $('primarySub').textContent='Expected Collector Tokens at this step.';
       const baseOnly = baseTokensTo(targetStep);
+      $('noLampLabel').textContent='Without Lamp Token Bonus';
       $('noLampStep').textContent=fmt(baseOnly,0);
       $('noLampSub').textContent='Collector Tokens at this step without Lamp token bonuses.';
     }
 
-    const start = Math.max(0,Math.floor(Number($('startStep').value)||0));
-    const totalBase = baseTokensTo(targetStep);
-    const totalLamp = includeLamp ? expectedLampBonusTo(targetStep) : 0;
-    const totalExpected = totalBase + totalLamp;
+    const totalBase = baseTokensTo(rewardStep);
+    const totalLamp = includeLamp ? expectedLampBonusTo(rewardStep) : 0;
+    const baseAtStart = baseTokensTo(start);
+    const lampAtStart = includeLamp ? expectedLampBonusTo(start) : 0;
 
-    const base = mode==='token' ? totalBase - baseTokensTo(start) : totalBase;
-    const lamp = mode==='token' && includeLamp
-      ? totalLamp - expectedLampBonusTo(start)
-      : totalLamp;
+    const isAdditional = mode==='token' || mode==='dice';
+    const base = isAdditional ? totalBase - baseAtStart : totalBase;
+    const lamp = isAdditional ? totalLamp - lampAtStart : totalLamp;
     const expected = base + lamp;
-    const dice=calcDice(targetStep);
 
-    $('diceNeeded').textContent=fmt(dice.dice);
-    $('diceSub').textContent=`${fmt(dice.rolls)} rolls × ${dice.batch} Dice${dice.start ? ` from Step ${fmt(dice.start)}` : ''}`;
+    if(mode==='dice'){
+      $('diceNeeded').textContent=fmt(enteredDice);
+      $('diceSub').textContent='Entered Dice · '+fmt(avg,avg%1?1:0)+' average steps each';
+    } else {
+      const dice=calcDice(targetStep);
+      $('diceNeeded').textContent=fmt(dice.dice);
+      $('diceSub').textContent=`${fmt(dice.rolls)} rolls × ${dice.batch} Dice${dice.start ? ` from Step ${fmt(dice.start)}` : ''}`;
+    }
+
     $('expectedTokens').textContent=fmt(expected,1);
-    $('tokenBreakdown').textContent=mode==='token'
+    $('tokenBreakdown').textContent=isAdditional
       ? `${fmt(base)} additional base${includeLamp ? ` + ${fmt(lamp,1)} expected Lamp bonus` : ' · Lamp bonus disabled'}`
       : `${fmt(base)} base${includeLamp ? ` + ${fmt(lamp,1)} expected Lamp bonus` : ' · Lamp bonus disabled'}`;
     $('lampBonus').textContent=includeLamp ? fmt(lamp,1) : 'Off';
 
-    const rewards = rewardsTo(targetStep,includeLamp);
-    $('rewardStepLabel').textContent='Step '+fmt(targetStep);
+    const rewards = rewardsTo(rewardStep,includeLamp);
+    $('rewardStepLabel').textContent='Step '+fmt(rewardStep);
     $('collectorReward').textContent=includeLamp ? fmt(rewards.expectedTokens,1) : fmt(rewards.baseTokens);
     $('collectorRewardSub').textContent=includeLamp
       ? `${fmt(rewards.baseTokens)} fixed + ${fmt(rewards.lampBonus,1)} expected Lamp bonus`
@@ -550,32 +582,45 @@
     $('lampReward').textContent=fmt(rewards.lamps);
     $('reserveReward').textContent=fmt(rewards.reserves);
 
-    const progressTarget = mode==='token' ? Number($('tokenGoal').value)||1 : Math.max(expected,1);
-    const pct = Math.min(100,expected/progressTarget*100);
+    const progressTarget = mode==='token'
+      ? Number($('tokenGoal').value)||1
+      : mode==='dice'
+        ? Math.max(enteredDice,1)
+        : Math.max(expected,1);
+    const progressValue = mode==='dice' ? enteredDice : expected;
+    const pct = Math.min(100,progressValue/progressTarget*100);
     $('progressBar').style.width=pct+'%';
 
-    $('resultNote').innerHTML = includeLamp
-      ? 'Magic Lamp results are random. The calculator shows the <b>expected average</b>, not a guaranteed outcome.'
-      : 'Magic Lamp Collector Token bonuses are <b>disabled</b>. The result uses only fixed map rewards.';
+    if(mode==='dice'){
+      $('resultNote').innerHTML='Dice → Steps uses the selected <b>average steps per Elegant Die</b>. Magic Lamp movement/Dice effects are not included; the Lamp option only affects the Collector Token estimate.';
+    } else {
+      $('resultNote').innerHTML = includeLamp
+        ? 'Magic Lamp results are random. The calculator shows the <b>expected average</b>, not a guaranteed outcome.'
+        : 'Magic Lamp Collector Token bonuses are <b>disabled</b>. The result uses only fixed map rewards.';
+    }
   }
 
   function setMode(next){
     mode=next;
     $('tokenTab').classList.toggle('active',mode==='token');
     $('stepTab').classList.toggle('active',mode==='step');
+    $('diceTab').classList.toggle('active',mode==='dice');
     $('tokenMode').classList.toggle('hidden',mode!=='token');
     $('stepMode').classList.toggle('hidden',mode!=='step');
+    $('diceMode').classList.toggle('hidden',mode!=='dice');
     update();
   }
 
   $('tokenTab').addEventListener('click',()=>setMode('token'));
   $('stepTab').addEventListener('click',()=>setMode('step'));
-  ['tokenGoal','stepGoal','startStep','avgSteps','diceBatch','lampToggle'].forEach(id=>$(id).addEventListener('input',update));
+  $('diceTab').addEventListener('click',()=>setMode('dice'));
+  ['tokenGoal','stepGoal','diceGoal','startStep','avgSteps','diceBatch','lampToggle'].forEach(id=>$(id).addEventListener('input',update));
   $('lampToggle').addEventListener('change',update);
 
   function resetCalculator(){
     $('stepGoal').value='0';
     $('tokenGoal').value='0';
+    $('diceGoal').value='0';
     $('startStep').value='0';
     $('avgSteps').value='2.5';
     $('diceBatch').value='8';
